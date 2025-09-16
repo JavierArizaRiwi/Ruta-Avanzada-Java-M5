@@ -97,7 +97,27 @@ En el archivo `pom.xml` se definen las propiedades y plugins necesarios para com
 
 ---
 
-## 3. Opción Avanzada: JAR con Dependencias (Fat JAR)
+## 3. Compilar y generar el JAR desde la terminal con Maven
+
+Si prefieres trabajar desde la terminal, puedes compilar y empaquetar tu proyecto Maven con el siguiente comando:
+
+```bash
+mvn clean package
+```
+
+Esto generará el archivo JAR ejecutable en la carpeta `target/`.  
+Para ejecutarlo, usa:
+
+```bash
+cd target
+java -jar Pagos-1.0-SNAPSHOT.jar
+```
+
+Asegúrate de tener configurada correctamente la clase principal en el `pom.xml` para que el JAR sea ejecutable.
+
+---
+
+## 4. Opción Avanzada: JAR con Dependencias (Fat JAR)
 
 Si tu proyecto utiliza librerías externas, puedes generar un JAR único que las incluya. Para esto se utiliza el plugin `maven-shade-plugin`.
 
@@ -127,7 +147,13 @@ Si tu proyecto utiliza librerías externas, puedes generar un JAR único que las
 </plugin>
 ```
 
-Con esta configuración, al ejecutar **Clean and Build**, se generará un archivo:  
+Con esta configuración, al ejecutar **Clean and Build** o el comando:
+
+```bash
+mvn clean package
+```
+
+se generará un archivo:
 
 ```
 target/Pagos-1.0-SNAPSHOT-shaded.jar
@@ -141,8 +167,9 @@ java -jar Pagos-1.0-SNAPSHOT-shaded.jar
 
 ---
 
-## 4. Conclusión
+## 5. Conclusión
 
 - El `pom.xml` es la pieza clave para definir la compilación y empaquetado del proyecto.  
 - NetBeans simplifica el proceso con la opción **Clean and Build**.  
+- También puedes compilar y empaquetar desde la terminal con `mvn clean package`.
 - Si se requiere distribuir un único archivo con todas las dependencias, se recomienda usar el `maven-shade-plugin`.
