@@ -250,17 +250,4 @@ Crea una clase base `Instrumento` con un método `tocar()`. Implementa dos subcl
 
 ---
 
-## Ejercicios adicionales
 
-1. **Abstracción:**  
-   Define una interfaz `Notificable` con el método `notificar(String mensaje)`. Implementa dos clases: `EmailNotificador` y `SMSNotificador`.
-
-2. **Encapsulación:**  
-   Crea una clase `Producto` con atributos privados `nombre` y `precio`. Agrega métodos para modificar el precio solo si es positivo.
-
-3. **Herencia y polimorfismo:**  
-   Crea una jerarquía de clases para `Figura` (`Circulo`, `Rectangulo`, `Triangulo`) y un método `calcularArea()` polimórfico.
-
----
-
-**¡Practica estos conceptos en tus propios proyectos para dominar la Programación Orientada a Objetos!**
