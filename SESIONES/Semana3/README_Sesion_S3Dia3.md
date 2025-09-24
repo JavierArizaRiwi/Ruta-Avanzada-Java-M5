@@ -24,8 +24,32 @@ Connection conn = DriverManager.getConnection(
     "jdbc:mysql://localhost:3306/tienda", "root", "password"
 );
 ```
+**Ejemplo de consulta SELECT:**
+```java
+String sql = "SELECT id, nombre, precio, stock FROM productos";
+try (PreparedStatement ps = conn.prepareStatement(sql);
+     ResultSet rs = ps.executeQuery()) {
+    while (rs.next()) {
+        int id = rs.getInt("id");
+        String nombre = rs.getString("nombre");
+        double precio = rs.getDouble("precio");
+        int stock = rs.getInt("stock");
+        System.out.println(id + " - " + nombre + " - $" + precio + " - Stock: " + stock);
+    }
+}
+```
+**Ejemplo de inserción (INSERT):**
+```java
+String sql = "INSERT INTO productos (nombre, precio, stock) VALUES (?, ?, ?)";
+try (PreparedStatement ps = conn.prepareStatement(sql)) {
+    ps.setString(1, "Teclado");
+    ps.setDouble(2, 49.99);
+    ps.setInt(3, 10);
+    ps.executeUpdate();
+}
+```
 **Comentario:**  
-Este paso es fundamental para cualquier operación con la base de datos. Si la conexión falla, no podrás realizar ninguna consulta.
+Estos ejemplos muestran cómo ejecutar operaciones básicas con JDBC, siempre usando `PreparedStatement` para evitar inyecciones SQL.
 
 ---
 
@@ -38,6 +62,9 @@ Una **interface** es un contrato que define qué métodos debe tener una clase, 
 public interface Repositorio<T> {
     void crear(T t);
     T buscarPorId(int id);
+    List<T> listar();
+    void actualizar(T t);
+    void eliminar(int id);
 }
 ```
 **¿Por qué se declara con `<T>`?**  
@@ -59,7 +86,32 @@ public class ProductoRepositorio implements Repositorio<Producto> {
         // Lógica para consultar en BD
         return null;
     }
+
+    @Override
+    public List<Producto> listar() {
+        // Lógica para listar productos
+        return new ArrayList<>();
+    }
+
+    @Override
+    public void actualizar(Producto p) {
+        // Lógica para actualizar producto
+    }
+
+    @Override
+    public void eliminar(int id) {
+        // Lógica para eliminar producto
+    }
 }
+```
+**Ejemplo de uso de la interface:**
+```java
+ProductoRepositorio repo = new ProductoRepositorio();
+Producto nuevo = new Producto("Mouse", 25.50, 20);
+repo.crear(nuevo);
+
+Producto encontrado = repo.buscarPorId(1);
+System.out.println("Producto encontrado: " + encontrado.getNombre());
 ```
 **Comentario:**  
 La clase `ProductoRepositorio` implementa los métodos definidos en la interface. Aquí es donde se escribe la lógica real, por ejemplo, cómo insertar un producto en la base de datos.
@@ -78,10 +130,36 @@ Separar el **qué hace** (contrato) del **cómo lo hace** (implementación) perm
 String nombre = JOptionPane.showInputDialog("Ingrese el nombre del producto:");
 JOptionPane.showMessageDialog(null, "Producto: " + nombre);
 ```
+**Ejemplo de menú con JOptionPane:**
+```java
+String[] opciones = {"Crear", "Consultar", "Actualizar", "Eliminar", "Salir"};
+int seleccion = JOptionPane.showOptionDialog(
+    null,
+    "Seleccione una opción:",
+    "Menú Mini-Tienda",
+    JOptionPane.DEFAULT_OPTION,
+    JOptionPane.INFORMATION_MESSAGE,
+    null,
+    opciones,
+    opciones[0]
+);
+```
+**Ejemplo de validación de entrada:**
+```java
+String precioStr = JOptionPane.showInputDialog("Ingrese el precio:");
+try {
+    double precio = Double.parseDouble(precioStr);
+    if (precio <= 0) throw new NumberFormatException();
+    // Continuar con el flujo
+} catch (NumberFormatException ex) {
+    JOptionPane.showMessageDialog(null, "Precio inválido. Debe ser un número positivo.");
+}
+```
 **Comentario:**  
 - `showInputDialog` muestra una ventana para que el usuario ingrese datos.
 - `showMessageDialog` muestra una ventana con un mensaje.
-- Estas ventanas son útiles para pedir información o mostrar resultados sin usar la consola.
+- `showOptionDialog` permite crear menús interactivos.
+- Validar la entrada del usuario es clave para evitar errores y mejorar la experiencia.
 
 **Ventajas:**  
 - Es fácil de usar y no requiere configuración adicional.
@@ -102,6 +180,10 @@ CREATE TABLE productos (
     precio DECIMAL(10,2),
     stock INT
 );
+```
+**Ejemplo de consulta para verificar productos:**
+```sql
+SELECT * FROM productos;
 ```
 **Comentario:**  
 - La columna `id` es la clave primaria y se incrementa automáticamente.
@@ -127,6 +209,21 @@ CREATE TABLE productos (
 ```
 [JOptionPane Menú] → [Selecciona opción] → [CRUD con JDBC] → [Mensaje al usuario]
 ```
+**Ejemplo de flujo de creación de producto:**
+```java
+String nombre = JOptionPane.showInputDialog("Nombre:");
+String precioStr = JOptionPane.showInputDialog("Precio:");
+String stockStr = JOptionPane.showInputDialog("Stock:");
+try {
+    double precio = Double.parseDouble(precioStr);
+    int stock = Integer.parseInt(stockStr);
+    Producto nuevo = new Producto(nombre, precio, stock);
+    repo.crear(nuevo);
+    JOptionPane.showMessageDialog(null, "Producto creado exitosamente.");
+} catch (Exception ex) {
+    JOptionPane.showMessageDialog(null, "Datos inválidos. Intente de nuevo.");
+}
+```
 **Comentario:**  
 Este flujo asegura que el usuario interactúe de forma sencilla y que todas las operaciones sean validadas y comunicadas correctamente.
 
@@ -139,6 +236,13 @@ Este flujo asegura que el usuario interactúe de forma sencilla y que todas las 
 - Usar `try-with-resources` para cerrar conexiones, sentencias y resultados automáticamente, evitando fugas de recursos.
 - Validar los datos antes de guardarlos en la base para evitar errores y mantener la integridad.
 
+**Ejemplo de try-with-resources:**
+```java
+try (Connection conn = DriverManager.getConnection(url, user, pass);
+     PreparedStatement ps = conn.prepareStatement(sql)) {
+    // Operaciones con la base de datos
+}
+```
 **Comentario:**  
 Aplicar estas prácticas hace que tu aplicación sea más segura, robusta y fácil de mantener.
 
