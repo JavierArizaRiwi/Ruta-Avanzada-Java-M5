@@ -1,465 +1,230 @@
+# Arquitectura por Capas en Java SE
 
-# 📘 Interfaces en Java — Guía Completa con Proyecto de Ejemplo
+## 1. Introducción
 
-> **Código módulo**:
-> **Objetivo**: Entender **qué son las interfaces**, **por qué** usarlas y **cómo** aplicarlas en un proyecto real (con JDBC o en memoria), favoreciendo **desacoplamiento**, **polimorfismo** y **testabilidad**.
+La arquitectura por capas es un modelo de diseño estructural que divide una aplicación en módulos o capas, donde cada una tiene responsabilidades específicas y se comunica solo con la capa inmediata. Este enfoque facilita el mantenimiento, la escalabilidad y la reutilización del código.
 
----
-
-## 1) Conceptos clave
-
-### ¿Qué es una interfaz?
-Una **interfaz** es un contrato que especifica **qué** debe hacer una clase, **no cómo**. Contiene **firmas de métodos** (y opcionalmente constantes) que las clases **implementan** con `implements`.
-
-```java
-public interface Operacion {
-    double ejecutar(double a, double b);
-}
-```
-
-### Ventajas
-- **Polimorfismo**: múltiples implementaciones detrás del mismo tipo.
-- **Desacoplamiento**: se depende de **abstracciones** y no de concreciones.
-- **Diseño modular**: facilita cambios y substitución de componentes.
-- **Testabilidad**: puedes **simular** dependencias (mocks/fakes) fácilmente.
-
-### Características modernas (Java 8+)
-- **Métodos `default`**: permiten agregar comportamiento por defecto sin romper implementaciones existentes.
-- **Métodos `static`**: utilidades relacionadas con la interfaz.
-- **Interfaces funcionales**: una sola abstracción (`@FunctionalInterface`) → compatibles con **lambdas**.
-
-```java
-@FunctionalInterface
-public interface Transform<T> {
-    T apply(T in);
-    // default y static también son válidos aquí
-}
-```
-
-### Herencia múltiple de tipos
-Las clases **no** soportan herencia múltiple, pero **sí** pueden **implementar varias interfaces**:
-```java
-public class MiServicio implements AutoCloseable, Runnable { /* ... */ }
-```
+### Objetivos
+- Separar responsabilidades (principio de separación de intereses).
+- Facilitar el mantenimiento y la extensión del sistema.
+- Aumentar la reutilización y la claridad del código.
 
 ---
 
-## 2) Interfaces vs Clases Abstractas (rápido)
+## 2. Capas principales
 
-| Aspecto | Interfaz | Clase abstracta |
-|---|---|---|
-| Estado (campos) | Solo constantes `public static final` | Puede tener estado (campos) |
-| Métodos con implementación | `default`/`static` (limitado) | Métodos concretos normales |
-| Herencia | Múltiples interfaces | Una sola súper-clase |
-| Cuándo usar | Contratos puros / roles | Plantillas parciales con estado compartido |
+| Capa | Responsabilidad | Ejemplo |
+|------|------------------|----------|
+| **Presentación (View)** | Interactúa con el usuario o sistema externo | Consola, interfaz gráfica o API |
+| **Negocio (Service / Logic)** | Contiene la lógica de negocio, validaciones y reglas | Métodos que procesan datos |
+| **Datos (DAO / Repository)** | Gestiona la conexión y operaciones con la base de datos o archivos | JDBC, CRUD, SQL, archivos |
 
----
-
-## 3) Buenas prácticas
-- **Programar contra interfaces**, no contra implementaciones.
-- Preferir **métodos pequeños y enfocados** en la interfaz (ISP: Interface Segregation Principle).
-- Mantener la interfaz **estable**; evolucionar con **métodos `default`** si es necesario.
-- Nombrar **con sustantivos** (p.ej., `RepositorioUsuario`) o adjetivar el rol (`Notificador`).
-- Evitar “**Dios interfaces**” (demasiados métodos en una sola interfaz).
+En Java SE, estas tres capas son suficientes para construir aplicaciones organizadas.
 
 ---
 
-## 4) Proyecto de ejemplo — Mini Inventario (Consola + Repositorio conmutables)
+## 3. Estructura de carpetas sugerida
 
-### Contexto
-Construimos un **módulo de inventario** con:
-- Una **interfaz de repositorio** (`ProductoRepository`).
-- **Dos implementaciones**: en memoria y JDBC.
-- Un **servicio de dominio** que **depende de la interfaz** (no conoce la tecnología).
-- Un **controlador** (consola) que usa el servicio.
-- Un **fake** para pruebas rápidas sin BD.
-
-### Estructura de carpetas
 ```
-interfaces-inventario/
- ├─ src/
- │   ├─ domain/
- │   │   ├─ Producto.java
- │   │   ├─ ProductoRepository.java      (INTERFAZ)
- │   │   └─ InventarioService.java
- │   ├─ infra/
- │   │   ├─ InMemoryProductoRepository.java
- │   │   └─ JdbcProductoRepository.java
- │   └─ app/
- │       └─ Main.java
- └─ README.md
+src/
+ ├── com.mycompany.app
+ │    ├── domain/
+ │    │    └── Estudiante.java
+ │    ├── dao/
+ │    │    └── EstudianteDAO.java
+ │    ├── service/
+ │    │    └── EstudianteService.java
+ │    └── ui/
+ │         └── AppMain.java
 ```
 
-### 4.1 Dominio
+Cada carpeta representa una capa con una función específica dentro de la aplicación.
 
-**Producto.java**
+---
+
+## 4. Ejemplo práctico: Sistema de gestión de estudiantes
+
+### Capa Domain (Modelo)
 ```java
-package domain;
+package com.mycompany.app.domain;
 
-public class Producto {
-    private Integer id;
+public class Estudiante {
+    private int id;
     private String nombre;
-    private int stock;
-    private double precio;
+    private double promedio;
 
-    public Producto(Integer id, String nombre, int stock, double precio) {
+    public Estudiante(int id, String nombre, double promedio) {
         this.id = id;
         this.nombre = nombre;
-        this.stock = stock;
-        this.precio = precio;
+        this.promedio = promedio;
     }
 
-    public Integer getId() { return id; }
+    public int getId() { return id; }
     public String getNombre() { return nombre; }
-    public int getStock() { return stock; }
-    public double getPrecio() { return precio; }
+    public double getPromedio() { return promedio; }
 
-    public void agregarStock(int unidades) { this.stock += unidades; }
-    public void quitarStock(int unidades) { this.stock -= unidades; }
-}
-```
-
-**ProductoRepository.java (INTERFAZ)**
-```java
-package domain;
-
-import java.util.List;
-import java.util.Optional;
-
-public interface ProductoRepository {
-    Producto guardar(Producto p);
-    Optional<Producto> porId(int id);
-    List<Producto> listar();
-    boolean eliminar(int id);
-
-    default boolean existe(int id) {
-        return porId(id).isPresent();
+    @Override
+    public String toString() {
+        return id + " - " + nombre + " - Promedio: " + promedio;
     }
 }
 ```
 
-**InventarioService.java**
-```java
-package domain;
+---
 
+### Capa DAO (Datos)
+```java
+package com.mycompany.app.dao;
+
+import com.mycompany.app.domain.Estudiante;
+import java.util.ArrayList;
 import java.util.List;
 
-public class InventarioService {
-    private final ProductoRepository repo;
+public class EstudianteDAO {
+    private List<Estudiante> estudiantes = new ArrayList<>();
 
-    // Inversión de Dependencia: inyectamos la INTERFAZ
-    public InventarioService(ProductoRepository repo) {
-        this.repo = repo;
+    public void guardar(Estudiante e) {
+        estudiantes.add(e);
     }
 
-    public Producto crearProducto(String nombre, int stock, double precio) {
-        // Validaciones de negocio
-        if (stock < 0 || precio < 0) {
-            throw new IllegalArgumentException("Stock y precio deben ser no negativos");
+    public List<Estudiante> listar() {
+        return estudiantes;
+    }
+
+    public Estudiante buscarPorId(int id) {
+        for (Estudiante e : estudiantes) {
+            if (e.getId() == id) return e;
         }
-        // id se delega al repo (p.ej. autoincremental)
-        Producto p = new Producto(null, nombre, stock, precio);
-        return repo.guardar(p);
-    }
-
-    public List<Producto> listar() { return repo.listar(); }
-
-    public void reponer(int id, int unidades) {
-        Producto p = repo.porId(id).orElseThrow(() -> new IllegalArgumentException("No existe producto " + id));
-        p.agregarStock(unidades);
-        repo.guardar(p);
-    }
-
-    public void vender(int id, int unidades) {
-        Producto p = repo.porId(id).orElseThrow(() -> new IllegalArgumentException("No existe producto " + id));
-        if (p.getStock() < unidades) throw new IllegalStateException("Stock insuficiente");
-        p.quitarStock(unidades);
-        repo.guardar(p);
-    }
-
-    public boolean eliminar(int id) { return repo.eliminar(id); }
-}
-```
-
-### 4.2 Infraestructura (Implementaciones de la interfaz)
-
-**InMemoryProductoRepository.java**
-```java
-package infra;
-
-import domain.Producto;
-import domain.ProductoRepository;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-
-public class InMemoryProductoRepository implements ProductoRepository {
-    private final Map<Integer, Producto> data = new HashMap<>();
-    private final AtomicInteger seq = new AtomicInteger(0);
-
-    @Override
-    public Producto guardar(Producto p) {
-        Integer id = p.getId();
-        if (id == null) {
-            id = seq.incrementAndGet();
-            p = new Producto(id, p.getNombre(), p.getStock(), p.getPrecio());
-        }
-        data.put(id, p);
-        return p;
-    }
-
-    @Override
-    public Optional<Producto> porId(int id) {
-        return Optional.ofNullable(data.get(id));
-    }
-
-    @Override
-    public List<Producto> listar() {
-        return new ArrayList<>(data.values());
-    }
-
-    @Override
-    public boolean eliminar(int id) {
-        return data.remove(id) != null;
+        return null;
     }
 }
 ```
 
-**JdbcProductoRepository.java**
+---
+
+### Capa Service (Lógica de Negocio)
 ```java
-package infra;
+package com.mycompany.app.service;
 
-import domain.Producto;
-import domain.ProductoRepository;
+import com.mycompany.app.dao.EstudianteDAO;
+import com.mycompany.app.domain.Estudiante;
+import java.util.List;
 
-import java.sql.*;
-import java.util.*;
+public class EstudianteService {
+    private EstudianteDAO dao = new EstudianteDAO();
 
-public class JdbcProductoRepository implements ProductoRepository {
-    private final Connection conn;
-
-    public JdbcProductoRepository(Connection conn) {
-        this.conn = conn;
+    public void registrarEstudiante(int id, String nombre, double promedio) {
+        if (promedio < 0 || promedio > 5) {
+            System.out.println("Promedio inválido");
+            return;
+        }
+        Estudiante e = new Estudiante(id, nombre, promedio);
+        dao.guardar(e);
     }
 
-    @Override
-    public Producto guardar(Producto p) {
-        try {
-            if (p.getId() == null) {
-                String sql = "INSERT INTO producto(nombre, stock, precio) VALUES (?, ?, ?)";
-                try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                    ps.setString(1, p.getNombre());
-                    ps.setInt(2, p.getStock());
-                    ps.setDouble(3, p.getPrecio());
-                    ps.executeUpdate();
-                    try (ResultSet rs = ps.getGeneratedKeys()) {
-                        if (rs.next()) {
-                            int id = rs.getInt(1);
-                            return new Producto(id, p.getNombre(), p.getStock(), p.getPrecio());
-                        }
-                    }
-                }
-            } else {
-                String sql = "UPDATE producto SET nombre=?, stock=?, precio=? WHERE id=?";
-                try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setString(1, p.getNombre());
-                    ps.setInt(2, p.getStock());
-                    ps.setDouble(3, p.getPrecio());
-                    ps.setInt(4, p.getId());
-                    ps.executeUpdate();
-                    return p;
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error guardando producto", e);
-        }
-        throw new RuntimeException("No se pudo guardar el producto");
+    public List<Estudiante> obtenerTodos() {
+        return dao.listar();
     }
 
-    @Override
-    public Optional<Producto> porId(int id) {
-        try {
-            String sql = "SELECT id, nombre, stock, precio FROM producto WHERE id=?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, id);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        return Optional.of(new Producto(
-                            rs.getInt("id"),
-                            rs.getString("nombre"),
-                            rs.getInt("stock"),
-                            rs.getDouble("precio")
-                        ));
-                    }
-                }
-            }
-            return Optional.empty();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error consultando producto", e);
-        }
-    }
-
-    @Override
-    public List<Producto> listar() {
-        List<Producto> out = new ArrayList<>();
-        try {
-            String sql = "SELECT id, nombre, stock, precio FROM producto ORDER BY id";
-            try (PreparedStatement ps = conn.prepareStatement(sql);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    out.add(new Producto(
-                        rs.getInt("id"),
-                        rs.getString("nombre"),
-                        rs.getInt("stock"),
-                        rs.getDouble("precio")
-                    ));
-                }
-            }
-            return out;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error listando productos", e);
-        }
-    }
-
-    @Override
-    public boolean eliminar(int id) {
-        try {
-            String sql = "DELETE FROM producto WHERE id=?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setInt(1, id);
-                return ps.executeUpdate() > 0;
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error eliminando producto", e);
-        }
+    public Estudiante buscarPorId(int id) {
+        return dao.buscarPorId(id);
     }
 }
 ```
 
-### 4.3 Aplicación (Consola)
+---
 
-**Main.java**
+### Capa UI (Presentación)
 ```java
-package app;
+package com.mycompany.app.ui;
 
-import domain.InventarioService;
-import infra.InMemoryProductoRepository;
-// import infra.JdbcProductoRepository;
-
+import com.mycompany.app.service.EstudianteService;
+import com.mycompany.app.domain.Estudiante;
 import java.util.Scanner;
 
-public class Main {
-    public static void main(String[] args) throws Exception {
-        // Cambia la implementación sin tocar el servicio (¡polimorfismo!)
-        var repo = new InMemoryProductoRepository();
-        // var conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/tienda", "root", "pass");
-        // var repo = new JdbcProductoRepository(conn);
+public class AppMain {
+    public static void main(String[] args) {
+        EstudianteService service = new EstudianteService();
+        Scanner sc = new Scanner(System.in);
 
-        var service = new InventarioService(repo);
-        var sc = new Scanner(System.in);
+        int opcion;
+        do {
+            System.out.println("\n--- MENÚ ESTUDIANTES ---");
+            System.out.println("1. Registrar");
+            System.out.println("2. Listar");
+            System.out.println("3. Buscar por ID");
+            System.out.println("0. Salir");
+            System.out.print("Opción: ");
+            opcion = sc.nextInt();
 
-        System.out.println("=== Inventario ===");
-        while (true) {
-            System.out.println("1) Crear  2) Listar  3) Reponer  4) Vender  5) Eliminar  0) Salir");
-            int op = Integer.parseInt(sc.nextLine());
-            if (op == 0) break;
-            try {
-                switch (op) {
-                    case 1 -> {
-                        System.out.print("Nombre: "); var n = sc.nextLine();
-                        System.out.print("Stock: ");  var s = Integer.parseInt(sc.nextLine());
-                        System.out.print("Precio: "); var p = Double.parseDouble(sc.nextLine());
-                        var creado = service.crearProducto(n, s, p);
-                        System.out.println("Creado ID=" + creado.getId());
-                    }
-                    case 2 -> service.listar().forEach(x ->
-                        System.out.println(x.getId() + " | " + x.getNombre() + " | " + x.getStock() + " | " + x.getPrecio()));
-                    case 3 -> {
-                        System.out.print("ID: "); var id = Integer.parseInt(sc.nextLine());
-                        System.out.print("Unidades: "); var u = Integer.parseInt(sc.nextLine());
-                        service.reponer(id, u);
-                        System.out.println("Stock actualizado.");
-                    }
-                    case 4 -> {
-                        System.out.print("ID: "); var id = Integer.parseInt(sc.nextLine());
-                        System.out.print("Unidades: "); var u = Integer.parseInt(sc.nextLine());
-                        service.vender(id, u);
-                        System.out.println("Venta registrada.");
-                    }
-                    case 5 -> {
-                        System.out.print("ID: "); var id = Integer.parseInt(sc.nextLine());
-                        System.out.println(service.eliminar(id) ? "Eliminado." : "No existe.");
-                    }
-                    default -> System.out.println("Opción inválida.");
+            switch (opcion) {
+                case 1 -> {
+                    System.out.print("ID: ");
+                    int id = sc.nextInt();
+                    sc.nextLine();
+                    System.out.print("Nombre: ");
+                    String nombre = sc.nextLine();
+                    System.out.print("Promedio: ");
+                    double prom = sc.nextDouble();
+                    service.registrarEstudiante(id, nombre, prom);
                 }
-            } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
+                case 2 -> {
+                    for (Estudiante e : service.obtenerTodos()) {
+                        System.out.println(e);
+                    }
+                }
+                case 3 -> {
+                    System.out.print("ID a buscar: ");
+                    int id = sc.nextInt();
+                    Estudiante e = service.buscarPorId(id);
+                    System.out.println(e != null ? e : "No encontrado");
+                }
             }
-        }
-        sc.close();
+        } while (opcion != 0);
     }
 }
 ```
 
 ---
 
-## 5) Interfaces + Patrones (Uso práctico)
+## 5. Flujo de comunicación entre capas
 
-- **Strategy**: estrategias de precio o descuento intercambiables.
-```java
-public interface PoliticaPrecio { double calcular(double base); }
-
-public class PrecioNormal implements PoliticaPrecio {
-    public double calcular(double base) { return base; }
-}
-
-public class PrecioDescuento implements PoliticaPrecio {
-    private final double porcentaje;
-    public PrecioDescuento(double porcentaje) { this.porcentaje = porcentaje; }
-    public double calcular(double base) { return base * (1 - porcentaje); }
-}
 ```
-
-- **Repository**: interfaces para persistencia → conmutar BD/memoria.
-- **Observer**: notificar a subsistemas (p.ej., alertas de bajo stock) mediante una interfaz `SuscriptorStock`.
-
----
-
-## 6) Pruebas con Fakes/Mocks (sin BD)
-```java
-class FakeRepo implements domain.ProductoRepository {
-    // Implementación mínima de pruebas...
-}
-/*
-Ventaja: al inyectar la INTERFAZ, puedes pasar FakeRepo al servicio
-para probar reglas de negocio sin levantar una base de datos real.
-*/
+┌─────────────┐       ┌────────────────┐       ┌──────────────┐
+│  AppMain    │──────▶│EstudianteService│──────▶│EstudianteDAO │
+│ (Present.)  │       │(Lógica negocio) │       │(Datos)       │
+└─────────────┘       └────────────────┘       └──────────────┘
+         │                          │                       │
+         │                          ▼                       ▼
+         │                    Validaciones              Lista de objetos
+         │
+         ▼
+     Usuario
 ```
 
 ---
 
-## 7) Ejercicios propuestos
-1. Agrega `buscarPorNombre(String q)` a la **interfaz** y a ambas implementaciones.
-2. Implementa **Observer**: cuando el stock baje de 5, notificar por consola.
-3. Cambia la política de precios usando **Strategy** (normal vs descuento).
-4. Escribe una prueba unitaria del `InventarioService` usando un **FakeRepo**.
-5. Cambia la app para usar JDBC sin cambiar **nada** en `InventarioService`.
+## 6. Buenas prácticas
+
+- Mantener una separación estricta entre las capas.
+- La capa de presentación no debe acceder directamente al DAO.
+- Definir paquetes con nombres coherentes: `domain`, `dao`, `service`, `ui`.
+- Implementar manejo de excepciones en la capa de servicio.
+- En caso de usar JDBC, mantener las consultas SQL dentro del DAO.
+- Documentar el flujo de datos y las responsabilidades de cada clase.
 
 ---
 
-## 8) SQL de referencia (JDBC)
-```sql
-CREATE TABLE producto (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  nombre VARCHAR(80) NOT NULL,
-  stock INT NOT NULL,
-  precio DECIMAL(10,2) NOT NULL
-);
-```
+## 7. Ejercicios sugeridos
+
+1. Agregar una opción para eliminar estudiantes por ID.
+2. Guardar los datos en un archivo CSV o base de datos MySQL usando JDBC.
+3. Implementar el menú usando `JOptionPane` en lugar de consola.
+4. Crear una excepción personalizada `EstudianteNoEncontradoException`.
+5. Aplicar principios SOLID en la capa de servicio (ej. principio de responsabilidad única).
 
 ---
 
-## 9) Resumen
-- Las **interfaces** permiten **contratos claros**, **polimorfismo** y **desacoplamiento**.
-- Combinadas con patrones como **Repository**, **Strategy** u **Observer**, facilitan diseño limpio.
-- Inyectar **interfaces** hace tu código **probable**, **sustituible** y **listo** para crecer (memoria → JDBC → REST).
+## 8. Conclusión
+
+La arquitectura por capas permite organizar y aislar las responsabilidades de una aplicación Java, haciendo que el sistema sea más limpio, flexible y fácil de mantener. Esta estructura es la base para comprender arquitecturas más avanzadas como MVC, hexagonal o microservicios.
