@@ -1,15 +1,15 @@
-# 🧩 Ejercicio Práctico – Semana 4  
+# Ejercicio Práctico – Semana 5 
 **Tema:** Arquitectura por capas, manejo de archivos y excepciones personalizadas  
 **Código:** ST-M5.1-Sem4-Práctica  
 
 ---
 
-## 🎯 Objetivo  
+## Objetivo  
 Aplicar los conceptos de arquitectura por capas, JDBC avanzado, manejo de archivos y excepciones personalizadas desarrollando una miniaplicación **de registro y exportación de pedidos**.
 
 ---
 
-## 🧱 Estructura de Carpetas
+## Estructura de Carpetas
 ```bash
 src/
  ├── model/
