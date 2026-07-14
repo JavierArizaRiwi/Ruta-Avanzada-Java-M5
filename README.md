@@ -1,7 +1,7 @@
 # Sistema Académico Riwi CodeUp – Introducción
 
 Bienvenido al repositorio del Sistema Académico Riwi CodeUp.  
-Aquí desarrollarás una aplicación profesional para la gestión de estudiantes, cursos y calificaciones, utilizando Java y una interfaz gráfica moderna con Java Swing.
+Aquí desarrollarás una aplicación profesional para la gestión de estudiantes, cursos y calificaciones, utilizando Java 17 o 21 como base de ejecución y una interfaz gráfica moderna con Java Swing.
 
 ## ¿Qué vas a lograr en este módulo?
 
@@ -27,13 +27,21 @@ El proyecto está organizado para que puedas trabajar de forma colaborativa, ver
 
 ## Tecnologías y buenas prácticas
 
-- **Java 17**
+- **Java 17 o 21 (LTS)**
 - **Java Swing (GUI)**
 - **JDBC + MySQL**
 - **JUnit para pruebas**
 - **GitHub + GitFlow**
 - **UML y documentación técnica**
 - **Seguridad básica (encriptación, roles, validaciones)**
+
+## Complementos recomendados
+
+- [Java 17 vs Java 21](COMPLEMENTOS/README_Java17_vs_Java21.md)
+- [Hilos y concurrencia en Java](COMPLEMENTOS/README_Hilos_y_Concurrencia.md)
+- [Arrays, matrices y colecciones](COMPLEMENTOS/README_Arrays.md)
+- [Manejo de excepciones](COMPLEMENTOS/README_ManejoExcepciones.md)
+- [Componentes Java: DTO, Mapper y Service](COMPLEMENTOS/README_Componentes_JAVA.md)
 
 ---
 

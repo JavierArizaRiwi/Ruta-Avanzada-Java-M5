@@ -357,7 +357,7 @@ public class UsuarioController {
 
 ## 9) Checklist de despliegue en **WildFly**
 
-- [ ] WildFly corriendo en **Java 17**.  
+- [ ] WildFly corriendo en **Java 17 o 21**.  
 - [ ] **DataSource JTA** con JNDI `java:/jdbc/MiDS`.  
 - [ ] `persistence.xml` con `<jta-data-source>`.  
 - [ ] `beans.xml` presente para **CDI**.  

@@ -10,7 +10,7 @@
 
 ## 0) Prerrequisitos
 
-- **Java 17** (o compatible con tu versión de WildFly).  
+- **Java 17 o 21** (o compatible con tu versión de WildFly).  
 - **Maven 3.8+**.  
 - **WildFly 30.x** (o versión estable reciente).  
 - Conexión local a `localhost:8080` para apps y `localhost:9990` para la consola de administración (Management).
@@ -543,7 +543,7 @@ $ WILDFLY_HOME/bin/jboss-cli.sh --connect
 
 ## 12) Checklist final
 
-- [ ] Java 17 y Maven instalados  
+- [ ] Java 17 o 21 y Maven instalados  
 - [ ] WildFly ejecutando en `localhost:8080` y `9990`  
 - [ ] `pom.xml` con `jakarta.jakartaee-api` (scope `provided`)  
 - [ ] RUTA A: `@ApplicationPath("/api")`, recurso `@Path`, EJB `@Stateless`  

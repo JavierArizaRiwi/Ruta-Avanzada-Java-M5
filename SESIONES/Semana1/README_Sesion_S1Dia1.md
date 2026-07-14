@@ -16,7 +16,7 @@ Este documento está pensado para personas que nunca han trabajado con Java. Aqu
 
 ---
 
-## Paso 1 – Instalar Java 17
+## Paso 1 – Instalar Java 17 o 21
 
 **¿Qué es Java?**  
 Java es el lenguaje de programación que usarás. Necesitas instalarlo para poder crear y ejecutar programas.
@@ -28,12 +28,14 @@ Abre la terminal y escribe:
 java -version
 ```
 
-Si ves algo como `openjdk version "17..."`, ya tienes Java 17.  
-Si no, instala Java con:
+Si ves algo como `openjdk version "17..."` o `openjdk version "21..."`, ya tienes una versión base compatible.  
+Si no, instala una de estas opciones LTS con:
 
 ```bash
 sudo apt update
 sudo apt install openjdk-17-jdk -y
+# o, si quieres usar Java 21 como base
+sudo apt install openjdk-21-jdk -y
 ```
 
 Vuelve a verificar la instalación:
@@ -221,6 +223,15 @@ mvn compile
 mvn exec:java -Dexec.mainClass="com.codeup.academico.App"
 ```
 
+## Refuerzo de temas difíciles
+
+Cuando ya tengas la base funcionando, conviene revisar dos temas que suelen costar bastante al principio:
+
+- [Diferencias entre Java 17 y Java 21](../../COMPLEMENTOS/README_Java17_vs_Java21.md)
+- [Hilos y concurrencia en Java](../../COMPLEMENTOS/README_Hilos_y_Concurrencia.md)
+
+Estos materiales te ayudarán a entender por qué Java 21 es una evolución interesante sobre Java 17 y cómo pensar correctamente cuando varios hilos trabajan sobre datos compartidos.
+
 ---
 
 ## Paso 8 – Documentar el proyecto
@@ -231,7 +242,7 @@ Crea un archivo llamado `README.md` en la raíz del proyecto con esta informaci�
 # Sistema Académico CodeUp
 
 ## Requisitos
-- Java 17
+- Java 17 o 21 (LTS)
 - Maven
 - Git
 

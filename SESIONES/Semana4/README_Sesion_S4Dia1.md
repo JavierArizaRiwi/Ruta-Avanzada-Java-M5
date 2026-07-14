@@ -23,7 +23,7 @@ public interface Operacion {
 - **Diseño modular**: facilita cambios y substitución de componentes.
 - **Testabilidad**: puedes **simular** dependencias (mocks/fakes) fácilmente.
 
-### Características modernas (Java 8+)
+### Características modernas (compatibles con Java 17 y 21)
 - **Métodos `default`**: permiten agregar comportamiento por defecto sin romper implementaciones existentes.
 - **Métodos `static`**: utilidades relacionadas con la interfaz.
 - **Interfaces funcionales**: una sola abstracción (`@FunctionalInterface`) → compatibles con **lambdas**.
