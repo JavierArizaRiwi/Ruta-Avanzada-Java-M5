@@ -225,6 +225,17 @@ public class InMemoryProductoRepository implements ProductoRepository {
 }
 ```
 
+## 5) Cómo esto prepara Spring Boot
+
+Todo este bloque de interfaces no es solo teoría: en Spring Boot se convierte directamente en la base del diseño por capas.
+
+- La interfaz `ProductoRepository` anticipa el rol de un repositorio de datos.
+- `InventarioService` anticipa la capa de servicio que Spring inyectará.
+- La separación entre contrato e implementación hace que luego sea trivial cambiar JDBC manual por `JpaRepository` o `JdbcTemplate`.
+- Los `default methods` y las interfaces funcionales ayudan a escribir código más flexible antes de entrar a Spring.
+
+La idea es que cuando llegues a Spring Boot ya pienses en contratos, no en clases rígidas acopladas.
+
 **JdbcProductoRepository.java**
 ```java
 package infra;

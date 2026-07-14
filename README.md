@@ -43,6 +43,12 @@ El proyecto está organizado para que puedas trabajar de forma colaborativa, ver
 - [Manejo de excepciones](COMPLEMENTOS/README_ManejoExcepciones.md)
 - [Componentes Java: DTO, Mapper y Service](COMPLEMENTOS/README_Componentes_JAVA.md)
 
+## Cierre y salto a Spring Boot
+
+- [Puente a Spring Boot](COMPLEMENTOS/README_Puente_SpringBoot.md)
+- [Guía WildFly / Jakarta EE / Spring MVC](COMPLEMENTOS/README_JAVAEE_Wildfly.md)
+- [Comparativa Java SE, Java EE y Spring Boot](COMPLEMENTOS/README_JAVAEE_SPRINGB.md)
+
 ---
 
 **¡Prepárate para construir tu primer sistema académico profesional en Java Swing, aplicando buenas prácticas y herramientas modernas!**

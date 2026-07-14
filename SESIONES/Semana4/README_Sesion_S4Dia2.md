@@ -231,3 +231,14 @@ Un **sistema bancario** puede usar:
 - **Patrones de Arquitectura** → cómo se organiza **todo el sistema**.  
 - **Patrones de Diseño** → cómo se organizan **los bloques internos** (clases/objetos).  
 - **Ambos se complementan**: MVC puede usar patrones GoF como Singleton o Strategy dentro de su implementación.
+
+## 4. Cómo esto conecta con Spring Boot
+
+Este material no se queda en teoría: Spring Boot usa exactamente esta forma de pensar.
+
+- `Model` suele convertirse en entidades, DTOs y objetos de dominio.
+- `View` puede ser REST, páginas HTML o una interfaz externa que consume la API.
+- `Controller` pasa a ser `@RestController` o `@Controller`.
+- `Service` y `Repository` mantienen la misma separación de responsabilidades que ya viste aquí.
+
+Si entiendes MVC y arquitectura por capas, Spring Boot deja de parecer una caja negra y empieza a verse como una implementación más moderna del mismo orden mental.
