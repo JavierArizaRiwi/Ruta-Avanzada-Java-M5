@@ -16,7 +16,7 @@ Este documento está pensado para personas que nunca han trabajado con Java. Aqu
 
 ---
 
-## Paso 1 – Instalar Java 17 o 21
+## Paso 1 – Instalar Java 21 LTS
 
 **¿Qué es Java?**  
 Java es el lenguaje de programación que usarás. Necesitas instalarlo para poder crear y ejecutar programas.
@@ -28,14 +28,14 @@ Abre la terminal y escribe:
 java -version
 ```
 
-Si ves algo como `openjdk version "17..."` o `openjdk version "21..."`, ya tienes una versión base compatible.  
+Si ves Java 21, tienes la versión base recomendada. Java 17 también sirve para los bloques fundamentales; Java 25 es LTS y puede usarse si todas tus herramientas son compatibles.
 Si no, instala una de estas opciones LTS con:
 
 ```bash
 sudo apt update
-sudo apt install openjdk-17-jdk -y
-# o, si quieres usar Java 21 como base
 sudo apt install openjdk-21-jdk -y
+# Alternativa para un entorno corporativo fijado en Java 17:
+sudo apt install openjdk-17-jdk -y
 ```
 
 Vuelve a verificar la instalación:
@@ -242,7 +242,7 @@ Crea un archivo llamado `README.md` en la raíz del proyecto con esta informaci�
 # Sistema Académico CodeUp
 
 ## Requisitos
-- Java 17 o 21 (LTS)
+- Java 21 LTS recomendado; Java 17 compatible con los fundamentos
 - Maven
 - Git
 

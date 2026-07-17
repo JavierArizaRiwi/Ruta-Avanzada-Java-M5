@@ -212,3 +212,17 @@ public class Main {
         if (buscado != null) buscado.mostrarInfo();
     }
 }
+```
+
+## Reto de refactorización
+
+El starter usa `Object`, casts y `null` de forma intencional para que identifiques sus costos. Después de hacerlo funcionar:
+
+1. reemplaza `Gestionable` por `Gestionable<T, ID>`;
+2. haz que `buscar` devuelva `Optional<Estudiante>`;
+3. usa pattern matching en lugar del cast manual si mantienes una entrada general;
+4. valida edad, capacidad, índices y rango de notas lanzando excepciones claras;
+5. impide que código externo modifique directamente el array interno;
+6. compara la solución con `List<Estudiante>` y justifica qué estructura conviene.
+
+Consulta [POO en profundidad](README_Sesion_S2Dia2.md), [Arrays y colecciones](../../COMPLEMENTOS/README_Arrays.md) y [Streams](../../COMPLEMENTOS/README_Streams_Java.md) antes de la última refactorización.

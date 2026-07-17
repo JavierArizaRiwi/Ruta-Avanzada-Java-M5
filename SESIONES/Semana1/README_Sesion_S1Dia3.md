@@ -203,4 +203,4 @@ try {
 
 ---
 
-**¡Listo! Con esta estructura, ejemplos de código y manejo de errores, puedes implementar y ampliar tu sistema académico en Java Swing de forma profesional
+Con esta estructura puedes implementar el sistema académico y ampliarlo progresivamente. Antes de llamarlo “profesional”, añade pruebas automatizadas, evita lógica de negocio en Swing y aplica el manejo de errores explicado en los niveles posteriores de la ruta.

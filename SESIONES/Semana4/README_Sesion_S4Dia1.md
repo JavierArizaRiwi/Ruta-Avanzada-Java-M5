@@ -1,15 +1,16 @@
 
-# 📘 Interfaces en Java — Guía Completa con Proyecto de Ejemplo
+# Interfaces en Java — contratos, polimorfismo y proyecto aplicado
 
-> **Código módulo**:
-> **Objetivo**: Entender **qué son las interfaces**, **por qué** usarlas y **cómo** aplicarlas en un proyecto real (con JDBC o en memoria), favoreciendo **desacoplamiento**, **polimorfismo** y **testabilidad**.
+> **Objetivo:** entender qué son las interfaces, cuándo aportan valor y cómo aplicarlas con implementaciones JDBC o en memoria, favoreciendo desacoplamiento, polimorfismo y testabilidad.
+>
+> **Prerrequisito:** [POO en profundidad](../Semana2/README_Sesion_S2Dia2.md). Después de esta guía continúa con [Streams y programación funcional](../../COMPLEMENTOS/README_Streams_Java.md).
 
 ---
 
 ## 1) Conceptos clave
 
 ### ¿Qué es una interfaz?
-Una **interfaz** es un contrato que especifica **qué** debe hacer una clase, **no cómo**. Contiene **firmas de métodos** (y opcionalmente constantes) que las clases **implementan** con `implements`.
+Una **interfaz** define un tipo y un contrato observable: qué operaciones ofrece y qué deben significar. Una clase lo implementa con `implements`. El contrato incluye más que firmas: también precondiciones, resultados, errores y efectos que sus implementaciones deben respetar.
 
 ```java
 public interface Operacion {
@@ -21,12 +22,14 @@ public interface Operacion {
 - **Polimorfismo**: múltiples implementaciones detrás del mismo tipo.
 - **Desacoplamiento**: se depende de **abstracciones** y no de concreciones.
 - **Diseño modular**: facilita cambios y substitución de componentes.
-- **Testabilidad**: puedes **simular** dependencias (mocks/fakes) fácilmente.
+- **Testabilidad**: puedes sustituir dependencias por fakes o mocks.
 
-### Características modernas (compatibles con Java 17 y 21)
+### Características modernas (compatibles con Java 17, 21 y 25)
 - **Métodos `default`**: permiten agregar comportamiento por defecto sin romper implementaciones existentes.
 - **Métodos `static`**: utilidades relacionadas con la interfaz.
+- **Métodos `private`**: permiten reutilizar implementación interna entre métodos `default` desde Java 9.
 - **Interfaces funcionales**: una sola abstracción (`@FunctionalInterface`) → compatibles con **lambdas**.
+- **Interfaces selladas**: restringen implementaciones autorizadas cuando el dominio es cerrado desde Java 17.
 
 ```java
 @FunctionalInterface
@@ -49,16 +52,16 @@ public class MiServicio implements AutoCloseable, Runnable { /* ... */ }
 | Aspecto | Interfaz | Clase abstracta |
 |---|---|---|
 | Estado (campos) | Solo constantes `public static final` | Puede tener estado (campos) |
-| Métodos con implementación | `default`/`static` (limitado) | Métodos concretos normales |
+| Métodos con implementación | `default`, `static` y auxiliares `private`; sin estado de instancia | Métodos concretos normales |
 | Herencia | Múltiples interfaces | Una sola súper-clase |
 | Cuándo usar | Contratos puros / roles | Plantillas parciales con estado compartido |
 
 ---
 
 ## 3) Buenas prácticas
-- **Programar contra interfaces**, no contra implementaciones.
+- Depender de interfaces en fronteras que necesitan sustitución; no crear una interfaz vacía por cada clase.
 - Preferir **métodos pequeños y enfocados** en la interfaz (ISP: Interface Segregation Principle).
-- Mantener la interfaz **estable**; evolucionar con **métodos `default`** si es necesario.
+- Mantener la interfaz estable; un método `default` ayuda a compatibilidad, pero no puede inventar una implementación correcta para todos los consumidores.
 - Nombrar **con sustantivos** (p.ej., `RepositorioUsuario`) o adjetivar el rol (`Notificador`).
 - Evitar “**Dios interfaces**” (demasiados métodos en una sola interfaz).
 
@@ -96,26 +99,39 @@ interfaces-inventario/
 ```java
 package domain;
 
+import java.math.BigDecimal;
+import java.util.Objects;
+
 public class Producto {
     private Integer id;
-    private String nombre;
+    private final String nombre;
     private int stock;
-    private double precio;
+    private final BigDecimal precio;
 
-    public Producto(Integer id, String nombre, int stock, double precio) {
+    public Producto(Integer id, String nombre, int stock, BigDecimal precio) {
+        if (stock < 0) throw new IllegalArgumentException("Stock negativo");
         this.id = id;
-        this.nombre = nombre;
+        this.nombre = Objects.requireNonNull(nombre).trim();
         this.stock = stock;
-        this.precio = precio;
+        this.precio = Objects.requireNonNull(precio);
+        if (precio.signum() < 0) throw new IllegalArgumentException("Precio negativo");
     }
 
     public Integer getId() { return id; }
     public String getNombre() { return nombre; }
     public int getStock() { return stock; }
-    public double getPrecio() { return precio; }
+    public BigDecimal getPrecio() { return precio; }
 
-    public void agregarStock(int unidades) { this.stock += unidades; }
-    public void quitarStock(int unidades) { this.stock -= unidades; }
+    public void agregarStock(int unidades) {
+        if (unidades <= 0) throw new IllegalArgumentException("Unidades positivas requeridas");
+        this.stock += unidades;
+    }
+
+    public void quitarStock(int unidades) {
+        if (unidades <= 0) throw new IllegalArgumentException("Unidades positivas requeridas");
+        if (unidades > stock) throw new IllegalStateException("Stock insuficiente");
+        this.stock -= unidades;
+    }
 }
 ```
 
@@ -123,6 +139,7 @@ public class Producto {
 ```java
 package domain;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -152,9 +169,9 @@ public class InventarioService {
         this.repo = repo;
     }
 
-    public Producto crearProducto(String nombre, int stock, double precio) {
+    public Producto crearProducto(String nombre, int stock, BigDecimal precio) {
         // Validaciones de negocio
-        if (stock < 0 || precio < 0) {
+        if (stock < 0 || precio == null || precio.signum() < 0) {
             throw new IllegalArgumentException("Stock y precio deben ser no negativos");
         }
         // id se delega al repo (p.ej. autoincremental)
@@ -172,7 +189,6 @@ public class InventarioService {
 
     public void vender(int id, int unidades) {
         Producto p = repo.porId(id).orElseThrow(() -> new IllegalArgumentException("No existe producto " + id));
-        if (p.getStock() < unidades) throw new IllegalStateException("Stock insuficiente");
         p.quitarStock(unidades);
         repo.guardar(p);
     }
@@ -261,7 +277,7 @@ public class JdbcProductoRepository implements ProductoRepository {
                 try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                     ps.setString(1, p.getNombre());
                     ps.setInt(2, p.getStock());
-                    ps.setDouble(3, p.getPrecio());
+                    ps.setBigDecimal(3, p.getPrecio());
                     ps.executeUpdate();
                     try (ResultSet rs = ps.getGeneratedKeys()) {
                         if (rs.next()) {
@@ -275,7 +291,7 @@ public class JdbcProductoRepository implements ProductoRepository {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, p.getNombre());
                     ps.setInt(2, p.getStock());
-                    ps.setDouble(3, p.getPrecio());
+                    ps.setBigDecimal(3, p.getPrecio());
                     ps.setInt(4, p.getId());
                     ps.executeUpdate();
                     return p;
@@ -299,7 +315,7 @@ public class JdbcProductoRepository implements ProductoRepository {
                             rs.getInt("id"),
                             rs.getString("nombre"),
                             rs.getInt("stock"),
-                            rs.getDouble("precio")
+                            rs.getBigDecimal("precio")
                         ));
                     }
                 }
@@ -322,7 +338,7 @@ public class JdbcProductoRepository implements ProductoRepository {
                         rs.getInt("id"),
                         rs.getString("nombre"),
                         rs.getInt("stock"),
-                        rs.getDouble("precio")
+                        rs.getBigDecimal("precio")
                     ));
                 }
             }
@@ -357,6 +373,7 @@ import domain.InventarioService;
 import infra.InMemoryProductoRepository;
 // import infra.JdbcProductoRepository;
 
+import java.math.BigDecimal;
 import java.util.Scanner;
 
 public class Main {
@@ -379,7 +396,7 @@ public class Main {
                     case 1 -> {
                         System.out.print("Nombre: "); var n = sc.nextLine();
                         System.out.print("Stock: ");  var s = Integer.parseInt(sc.nextLine());
-                        System.out.print("Precio: "); var p = Double.parseDouble(sc.nextLine());
+                        System.out.print("Precio: "); var p = new BigDecimal(sc.nextLine());
                         var creado = service.crearProducto(n, s, p);
                         System.out.println("Creado ID=" + creado.getId());
                     }
